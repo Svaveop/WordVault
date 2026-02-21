@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Word Vault</title>
+
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📚</text></svg>">
+
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, #4e73df, #9b59b6);
+        }
+
+        .container {
+            width: 95%;
+            max-width: 750px;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .counter {
+            text-align: center;
+            margin-bottom: 20px;
+            font-weight: 600;
+            color: #555;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        input {
+            flex: 1;
+            padding: 12px 15px;
+            border-radius: 12px;
+            border: 1px solid #ddd;
+            outline: none;
+            transition: 0.2s;
+        }
+
+        input:focus {
+            border-color: #4e73df;
+            box-shadow: 0 0 0 3px rgba(78, 115, 223, 0.2);
+        }
+
+        button {
+            padding: 12px 16px;
+            border: none;
+            border-radius: 12px;
+            background: #4e73df;
+            color: white;
+            cursor: pointer;
+            transition: 0.2s;
+            font-weight: 600;
+        }
+
+        button:hover {
+            background: #3b5bdb;
+        }
+
+        .edit-btn {
+            background: #f6c23e;
+            margin-right: 5px;
+        }
+
+        .edit-btn:hover {
+            background: #dda20a;
+        }
+
+        .delete-btn {
+            background: #ff6b6b;
+        }
+
+        .delete-btn:hover {
+            background: #e63946;
+        }
+
+        .search-section {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            align-items: center;
+        }
+
+        .search-bar {
+            position: relative;
+            flex: 1;
+        }
+
+        .search-bar input {
+            width: 100%;
+            padding-left: 40px;
+        }
+
+        .search-bar i {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #888;
+        }
+
+        ul {
+            list-style: none;
+            max-height: 350px;
+            overflow-y: auto;
+            padding-right: 5px;
+            scrollbar-width: thin;
+            scrollbar-color: #4e73df #eef1ff;
+        }
+
+        ul::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ul::-webkit-scrollbar-track {
+            background: #eef1ff;
+            border-radius: 10px;
+        }
+
+        ul::-webkit-scrollbar-thumb {
+            background: linear-gradient(180deg, #4e73df, #9b59b6);
+            border-radius: 10px;
+        }
+
+        ul::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(180deg, #3b5bdb, #8e44ad);
+        }
+
+        li {
+            background: #f5f7ff;
+            padding: 12px 15px;
+            border-radius: 12px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: 0.2s;
+            animation: fadeIn 0.2s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        li:hover {
+            background: #e2e8ff;
+        }
+
+        .word-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .word {
+            font-weight: bold;
+            color: #333;
+        }
+
+        .translation {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .number {
+            font-weight: bold;
+            margin-right: 10px;
+            color: #4e73df;
+        }
+
+        .left-side {
+            display: flex;
+            align-items: center;
+        }
+
+        .actions {
+            display: flex;
+        }
+
+        .empty {
+            text-align: center;
+            color: #777;
+            margin-top: 10px;
+        }
+
+        .uniqueness {
+            margin-top: 15px;
+            font-size: 13px;
+            color: #555;
+            text-align: center;
+            font-style: italic;
+        }
+
+        .translate-btn {
+            width: 44px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 18px;
+            transition: 0.2s;
+        }
+
+        .translate-btn.off {
+            background: #ccc;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>📚 Word Vault</h1>
+    <div class="counter" id="wordCounter">Total words: 0</div>
+
+    <div class="input-group">
+        <input type="text" id="wordInput" placeholder="Enter word...">
+        <input type="text" id="translationInput" placeholder="Enter translation...">
+        <button onclick="addWord()">Add</button>
+    </div>
+
+    <div class="search-section">
+        <div class="search-bar">
+            <i class="fas fa-search"></i>
+            <input type="text" id="searchInput" placeholder="Search..." oninput="searchWords()">
+        </div>
+        <button class="translate-btn" id="toggleTranslate" onclick="toggleTranslations()">
+            <i class="fas fa-language"></i>
+        </button>
+        <button onclick="exportJSON()">Export JSON</button>
+    </div>
+
+    <ul id="wordList"></ul>
+    <div id="emptyMessage" class="empty">No words added yet.</div>
+    <div class="uniqueness">This web is unique: no ads, no subscriptions, no addictive mechanics - just your words.</div>
+</div>
+
+<script>
+    let words = JSON.parse(localStorage.getItem('words')) || [];
+    let hideTranslations = false;
+    const toggleBtn = document.getElementById('toggleTranslate');
+
+    function saveWords() {
+        localStorage.setItem('words', JSON.stringify(words));
+    }
+
+    function updateCounter() {
+        document.getElementById('wordCounter').textContent = `Total words: ${words.length}`;
+    }
+
+    function renderWords(filteredWords = words) {
+        const list = document.getElementById('wordList');
+        const emptyMessage = document.getElementById('emptyMessage');
+        const scrollTop = list.scrollTop;
+        list.innerHTML = '';
+
+        if (filteredWords.length === 0) {
+            emptyMessage.style.display = 'block';
+        } else {
+            emptyMessage.style.display = 'none';
+        }
+
+        filteredWords.forEach((item, index) => {
+            const li = document.createElement('li');
+            li.innerHTML = `
+                <div class="left-side">
+                    <span class="number">${index + 1}.</span>
+                    <div class="word-info">
+                        <span class="word">${item.word}</span>
+                        <span class="translation" style="display: ${hideTranslations ? 'none' : 'block'}">${item.translation}</span>
+                    </div>
+                </div>
+                <div class="actions">
+                    <button class="edit-btn" onclick="editWord(${index})">Edit</button>
+                    <button class="delete-btn" onclick="deleteWord(${index})">Delete</button>
+                </div>
+            `;
+            list.appendChild(li);
+        });
+
+        updateCounter();
+        list.scrollTop = scrollTop;
+        toggleBtn.classList.toggle('off', hideTranslations);
+    }
+
+    function addWord() {
+        const wordInput = document.getElementById('wordInput');
+        const translationInput = document.getElementById('translationInput');
+        const word = wordInput.value.trim();
+        const translation = translationInput.value.trim();
+
+        if (word && translation) {
+            words.push({ word, translation });
+            saveWords();
+            renderWords();
+            wordInput.value = '';
+            translationInput.value = '';
+        }
+    }
+
+    function deleteWord(index) {
+        words.splice(index, 1);
+        saveWords();
+        renderWords();
+    }
+
+    function editWord(index) {
+        const newWord = prompt("Edit word:", words[index].word);
+        const newTranslation = prompt("Edit translation:", words[index].translation);
+        if (newWord !== null && newTranslation !== null) {
+            words[index] = { word: newWord.trim(), translation: newTranslation.trim() };
+            saveWords();
+            renderWords();
+        }
+    }
+
+    function searchWords() {
+        const val = document.getElementById('searchInput').value.toLowerCase();
+        const filtered = words.filter(item => item.word.toLowerCase().includes(val) || item.translation.toLowerCase().includes(val));
+        renderWords(filtered);
+    }
+
+    function exportJSON() {
+        const dataStr = JSON.stringify(words, null, 2);
+        const blob = new Blob([dataStr], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = "word-vault-data.json";
+        a.click();
+        URL.revokeObjectURL(url);
+    }
+
+    function toggleTranslations() {
+        hideTranslations = !hideTranslations;
+        renderWords();
+    }
+
+    renderWords();
+</script>
+
+</body>
+</html>
